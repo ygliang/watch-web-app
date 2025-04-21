@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apple Watch 雙向文字顯示</title>
+  <style>
+    body {
+      margin: 0;
+      background: black;
+      color: white;
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .text {
+      width: 100%;
+      text-align: center;
+      font-size: 20px;
+      padding: 20px;
+    }
+    .top {
+      transform: rotate(180deg);
+      color: #00f0ff; /* 藍綠色 */
+    }
+    .bottom {
+      color: #ffcc00; /* 黃色 */
+    }
+    .controls {
+      position: absolute;
+      bottom: 10px;
+      display: flex;
+      gap: 20px;
+    }
+    button {
+      font-size: 18px;
+      padding: 6px 12px;
+      border-radius: 10px;
+      border: none;
+      background: #444;
+      color: white;
+    }
+    button:active {
+      background: #666;
+    }
+  </style>
+</head>
+<body ontouchstart="">
+  <div class="text top" id="topText">頂端文字第 1 頁</div>
+  <div class="text bottom" id="bottomText">底部文字第 1 頁</div>
+
+  <div class="controls">
+    <button onclick="prevPage()">↑</button>
+    <button onclick="nextPage()">↓</button>
+  </div>
+
+  <script>
+    const pages = [
+      { top: '頂端文字第 1 頁', bottom: '底部文字第 1 頁' },
+      { top: '頂端文字第 2 頁', bottom: '底部文字第 2 頁' },
+      { top: '頂端文字第 3 頁', bottom: '底部文字第 3 頁' }
+    ];
+    let currentPage = 0;
+
+    function updatePage() {
+      document.getElementById('topText').textContent = pages[currentPage].top;
+      document.getElementById('bottomText').textContent = pages[currentPage].bottom;
+    }
+
+    function nextPage() {
+      currentPage = (currentPage + 1) % pages.length;
+      updatePage();
+    }
+
+    function prevPage() {
+      currentPage = (currentPage - 1 + pages.length) % pages.length;
+      updatePage();
+    }
+
+    // 支援滑動手勢（上下）
+    let startY = 0;
+    document.body.addEventListener('touchstart', e => {
+      startY = e.touches[0].clientY;
+    });
+
+    document.body.addEventListener('touchend', e => {
+      let endY = e.changedTouches[0].clientY;
+      if (endY < startY - 30) {
+        nextPage();
+      } else if (endY > startY + 30) {
+        prevPage();
+      }
+    });
+  </script>
+</body>
+</html>
