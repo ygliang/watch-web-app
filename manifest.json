@@ -1,6 +1,6 @@
 {
-  "name": "雙向字幕",
-  "short_name": "字幕",
+  "name": "散手",
+  "short_name": "散手",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#000000",
