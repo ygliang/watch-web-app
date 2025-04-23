@@ -39,11 +39,15 @@
       text-align: center;
       padding: 0 8px;
       line-height: 1.2;
+      font-size: 40px; /* 預設大小，可被 media query 覆蓋 */
+      white-space: pre-wrap;
+      word-break: break-word;
     }
 
     #topText {
       background-color: #1e3a8a;
       transform: rotate(180deg);
+      transform-origin: center center;
       color: white;
     }
 
@@ -52,19 +56,17 @@
       color: white;
     }
 
+    /* 響應式字體大小：上、下半部統一大小 */
     @media (max-width: 250px) {
-      #topText { font-size: 32px; }
-      #bottomText { font-size: 40px; }
+      .half { font-size: 32px; }
     }
 
     @media (min-width: 251px) and (max-width: 450px) {
-      #topText { font-size: 36px; }
-      #bottomText { font-size: 48px; }
+      .half { font-size: 40px; }
     }
 
     @media (min-width: 451px) {
-      #topText { font-size: 44px; }
-      #bottomText { font-size: 56px; }
+      .half { font-size: 56px; }
     }
   </style>
 </head>
@@ -113,11 +115,11 @@
       showText();
     }
 
-    // 點擊上下半部切換
+    // 點擊上下半部切換頁面
     document.getElementById("topText").addEventListener("click", prevText);
     document.getElementById("bottomText").addEventListener("click", nextText);
 
-    // 支援 Apple Watch 的數位旋鈕（或滑動）
+    // 支援滑動 / Apple Watch 數位旋鈕
     window.addEventListener("wheel", e => {
       if (e.deltaY > 0) nextText();
       else prevText();
