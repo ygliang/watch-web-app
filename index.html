@@ -110,15 +110,17 @@
 
     // 根據裝置高度自動放大字體
     function adjustFontSize() {
-      const height = window.innerHeight;
-      const topSize = Math.floor(height * 0.35); // 上半部佔畫面高度的 35%
-      const bottomSize = Math.floor(height * 0.42); // 下半部佔 42%
+  const height = window.innerHeight;
+  const topSize = Math.floor(height * 0.35);
+  const bottomSize = Math.floor(height * 0.42);
 
-      document.getElementById("topText").style.fontSize = `${topSize}px`;
-      document.getElementById("bottomText").style.fontSize = `${bottomSize}px`;
-    }
+  document.getElementById("topText").style.fontSize = `${topSize}px`;
+  document.getElementById("bottomText").style.fontSize = `${bottomSize}px`;
+}
 
-    window.addEventListener("resize", adjustFontSize);
+window.addEventListener("resize", adjustFontSize);
+window.addEventListener("load", adjustFontSize);
+
 
     // 初始執行
     adjustFontSize();
