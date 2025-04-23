@@ -1,132 +1,134 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 
+  <!-- iOS 全螢幕設定 -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
-  <meta name="apple-mobile-web-app-title" content="散手" />
+  <meta name="apple-mobile-web-app-title" content="雙向字幕" />
   <link rel="apple-touch-icon" href="icon.png" />
-  
-  <title>散手</title>
+
+  <!-- Android PWA 設定 -->
+  <link rel="manifest" href="manifest.json" />
+
+  <title>雙向字幕</title>
+
   <style>
     html, body {
       margin: 0;
+      padding: 0;
       height: 100%;
-      background: black;
+      background-color: black;
       color: white;
       font-family: sans-serif;
       overflow: hidden;
       touch-action: manipulation;
+      -webkit-user-select: none;
+      user-select: none;
     }
-    .half {
-      width: 100%;
-      height: 50%;
+
+    #container {
       display: flex;
-      align-items: center;
+      flex-direction: column;
+      height: 100%;
+      width: 100%;
+    }
+
+    .half {
+      flex: 1;
+      display: flex;
       justify-content: center;
-      padding: 5%;
+      align-items: center;
       text-align: center;
-      box-sizing: border-box;
+      padding: 0 8px;
     }
-    .top {
+
+    #topText {
+      background-color: #1e3a8a;
       transform: rotate(180deg);
-      color: #00f0ff;
-      font-size: 8vh;
-      line-height: 1.1;
-    }
-    .bottom {
-      color: #ffcc00;
-      font-size: 8vh;
-      line-height: 1.1;
+      color: #fff;
+      font-size: 6vh;
     }
 
-    /* 手錶優化：放更大 */
-    @media (max-width: 400px) {
-      .top, .bottom {
-        font-size: 10vh;
+    #bottomText {
+      background-color: #10b981;
+      color: #fff;
+      font-size: 7vh;
+    }
+
+    /* 超小螢幕（如 Apple Watch）進一步放大字 */
+    @media (max-width: 250px) {
+      #topText {
+        font-size: 8vh;
       }
-    }
 
-    /* 平板或桌機可適度縮小 */
-    @media (min-width: 768px) {
-      .top, .bottom {
-        font-size: 6vh;
+      #bottomText {
+        font-size: 9vh;
       }
     }
   </style>
 </head>
 <body>
-  <div class="half top" id="topText">載入中...</div>
-  <div class="half bottom" id="bottomText">載入中...</div>
+  <div id="container">
+    <div class="half" id="topText"></div>
+    <div class="half" id="bottomText"></div>
+  </div>
 
   <script>
-    let pages = [];
-    let currentPage = 0;
+    const SHEET_ID = "1K-Gj8MXLQHO7UnKjNtPkWOq1-kLg5MPul9RZSUoNVH0";
+    const SHEET_NAME = "工作表1";
+    const API_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?sheet=${SHEET_NAME}`;
 
-    const sheetID = "1K-Gj8MXLQHO7UnKjNtPkWOq1-kLg5MPul9RZSUoNVH0";
-    const sheetName = "工作表1";
-    const query = encodeURIComponent("SELECT A, B");
-    const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?sheet=${sheetName}&tq=${query}`;
+    let data = [];
+    let currentIndex = 0;
 
-    function parseData(dataText) {
-      const json = JSON.parse(dataText.match(/(?<=google\.visualization\.Query\.setResponse\().*(?=\);)/s)[0]);
+    async function fetchData() {
+      const response = await fetch(API_URL);
+      const text = await response.text();
+      const json = JSON.parse(text.match(/google\.visualization\.Query\.setResponse\(([\s\S\w]+)\)/)[1]);
       const rows = json.table.rows;
-      pages = rows.map(row => ({
-        bottom: row.c[0]?.v || '',
-        top: row.c[1]?.v || ''
+
+      data = rows.map(row => ({
+        bottom: row.c[0]?.v || "",
+        top: row.c[1]?.v || ""
       }));
-      updatePage();
+
+      showText();
     }
 
-    function updatePage() {
-      document.getElementById('topText').textContent = pages[currentPage].top;
-      document.getElementById('bottomText').textContent = pages[currentPage].bottom;
+    function showText() {
+      if (data.length === 0) return;
+      const item = data[currentIndex];
+      document.getElementById("topText").innerText = item.top;
+      document.getElementById("bottomText").innerText = item.bottom;
     }
 
-    function nextPage() {
-      currentPage = (currentPage + 1) % pages.length;
-      updatePage();
+    function nextText() {
+      currentIndex = (currentIndex + 1) % data.length;
+      showText();
     }
 
-    function prevPage() {
-      currentPage = (currentPage - 1 + pages.length) % pages.length;
-      updatePage();
+    function prevText() {
+      currentIndex = (currentIndex - 1 + data.length) % data.length;
+      showText();
     }
 
-    // 載入資料
-    fetch(url)
-      .then(res => res.text())
-      .then(parseData)
-      .catch(err => {
-        document.getElementById('topText').textContent = "資料載入失敗";
-        document.getElementById('bottomText').textContent = err.message;
-      });
+    // 點擊上半部：上一筆；下半部：下一筆
+    document.getElementById("topText").addEventListener("click", prevText);
+    document.getElementById("bottomText").addEventListener("click", nextText);
 
-    // 點觸上／下半部翻頁
-    document.querySelector('.top').addEventListener('click', prevPage);
-    document.querySelector('.bottom').addEventListener('click', nextPage);
-
-    // 滾動滾輪／數位錶冠模擬上下頁
-    window.addEventListener('wheel', e => {
-      if (e.deltaY < 0) prevPage();
-      else nextPage();
+    // Apple Watch 數位旋鈕（如支援）
+    window.addEventListener("wheel", e => {
+      if (e.deltaY > 0) {
+        nextText();
+      } else {
+        prevText();
+      }
     });
 
-    // 嘗試自動進入全螢幕模式（用戶需手動允許）
-    function requestFullscreen() {
-      const elem = document.documentElement;
-      if (elem.requestFullscreen) {
-        elem.requestFullscreen();
-      } else if (elem.webkitRequestFullscreen) {
-        elem.webkitRequestFullscreen();
-      }
-    }
-
-    document.body.addEventListener("click", () => {
-      requestFullscreen();
-    }, { once: true });
+    fetchData();
   </script>
 </body>
 </html>
