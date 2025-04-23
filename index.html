@@ -1,70 +1,73 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Apple Watch 雙向文字顯示</title>
   <style>
-    body {
+    html, body {
       margin: 0;
+      height: 100%;
       background: black;
       color: white;
       font-family: sans-serif;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      align-items: center;
-      height: 100vh;
       overflow: hidden;
+      touch-action: manipulation;
     }
-    .text {
+    .half {
       width: 100%;
+      height: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 5%;
       text-align: center;
-      font-size: 20px;
-      padding: 20px;
+      box-sizing: border-box;
     }
     .top {
       transform: rotate(180deg);
-      color: #00f0ff; /* 藍綠色 */
+      color: #00f0ff;
+      font-size: 4vh;
     }
     .bottom {
-      color: #ffcc00; /* 黃色 */
+      color: #ffcc00;
+      font-size: 4vh;
     }
-    .controls {
-      position: absolute;
-      bottom: 10px;
-      display: flex;
-      gap: 20px;
+    @media (min-width: 768px) {
+      .top, .bottom {
+        font-size: 6vh;
+      }
     }
-    button {
-      font-size: 18px;
-      padding: 6px 12px;
-      border-radius: 10px;
-      border: none;
-      background: #444;
-      color: white;
-    }
-    button:active {
-      background: #666;
+    @media (min-width: 1024px) {
+      .top, .bottom {
+        font-size: 8vh;
+      }
     }
   </style>
 </head>
-<body ontouchstart="">
-  <div class="text top" id="topText">頂端文字第 1 頁</div>
-  <div class="text bottom" id="bottomText">底部文字第 1 頁</div>
+<body>
+  <div class="half top" id="topText">載入中...</div>
+  <div class="half bottom" id="bottomText">載入中...</div>
 
-  <div class="controls">
-    <button onclick="prevPage()">↑</button>
-    <button onclick="nextPage()">↓</button>
-  </div>
-
-  <script>
-    const pages = [
-      { top: '頂端文字第 1 頁', bottom: '底部文字第 1 頁' },
-      { top: '頂端文字第 2 頁', bottom: '底部文字第 2 頁' },
-      { top: '頂端文字第 3 頁', bottom: '底部文字第 3 頁' }
-    ];
+  <script type="text/javascript">
+    let pages = [];
     let currentPage = 0;
+
+    // 抓 Google Sheet 資料
+    const sheetID = "1K-Gj8MXLQHO7UnKjNtPkWOq1-kLg5MPul9RZSUoNVH0";
+    const sheetName = "工作表1"; // 根據你的表單命名
+    const query = encodeURIComponent("SELECT A, B");
+    const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?sheet=${sheetName}&tq=${query}`;
+
+    function parseData(dataText) {
+      const json = JSON.parse(dataText.match(/(?<=google\.visualization\.Query\.setResponse\().*(?=\);)/s)[0]);
+      const rows = json.table.rows;
+      pages = rows.map(row => ({
+        top: row.c[0]?.v || '',
+        bottom: row.c[1]?.v || ''
+      }));
+      updatePage();
+    }
 
     function updatePage() {
       document.getElementById('topText').textContent = pages[currentPage].top;
@@ -81,19 +84,24 @@
       updatePage();
     }
 
-    // 支援滑動手勢（上下）
-    let startY = 0;
-    document.body.addEventListener('touchstart', e => {
-      startY = e.touches[0].clientY;
-    });
+    // 載入資料
+    fetch(url)
+      .then(res => res.text())
+      .then(parseData)
+      .catch(err => {
+        document.getElementById('topText').textContent = "資料載入失敗";
+        document.getElementById('bottomText').textContent = err.message;
+      });
 
-    document.body.addEventListener('touchend', e => {
-      let endY = e.changedTouches[0].clientY;
-      if (endY < startY - 30) {
-        nextPage();
-      } else if (endY > startY + 30) {
-        prevPage();
-      }
+    // 點擊上半部／下半部切換頁面
+    document.querySelector('.top').addEventListener('click', prevPage);
+    document.querySelector('.bottom').addEventListener('click', nextPage);
+
+    // Apple Watch Digital Crown: 若部署為 PWA，可監聽滾動事件或旋轉事件（受限 watchOS）
+    // 模擬滾動翻頁
+    window.addEventListener('wheel', e => {
+      if (e.deltaY < 0) prevPage();
+      else nextPage();
     });
   </script>
 </body>
