@@ -2,8 +2,8 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Apple Watch 雙向文字顯示</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Watch 雙向文字顯示</title>
   <style>
     html, body {
       margin: 0;
@@ -27,20 +27,26 @@
     .top {
       transform: rotate(180deg);
       color: #00f0ff;
-      font-size: 6vh;
+      font-size: 8vh;
+      line-height: 1.1;
     }
     .bottom {
       color: #ffcc00;
-      font-size: 6vh;
+      font-size: 8vh;
+      line-height: 1.1;
     }
+
+    /* 手錶優化：放更大 */
+    @media (max-width: 400px) {
+      .top, .bottom {
+        font-size: 10vh;
+      }
+    }
+
+    /* 平板或桌機可適度縮小 */
     @media (min-width: 768px) {
       .top, .bottom {
         font-size: 6vh;
-      }
-    }
-    @media (min-width: 1024px) {
-      .top, .bottom {
-        font-size: 8vh;
       }
     }
   </style>
@@ -49,13 +55,12 @@
   <div class="half top" id="topText">載入中...</div>
   <div class="half bottom" id="bottomText">載入中...</div>
 
-  <script type="text/javascript">
+  <script>
     let pages = [];
     let currentPage = 0;
 
-    // 抓 Google Sheet 資料
     const sheetID = "1K-Gj8MXLQHO7UnKjNtPkWOq1-kLg5MPul9RZSUoNVH0";
-    const sheetName = "工作表1"; // 根據你的表單命名
+    const sheetName = "工作表1";
     const query = encodeURIComponent("SELECT A, B");
     const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?sheet=${sheetName}&tq=${query}`;
 
@@ -63,8 +68,8 @@
       const json = JSON.parse(dataText.match(/(?<=google\.visualization\.Query\.setResponse\().*(?=\);)/s)[0]);
       const rows = json.table.rows;
       pages = rows.map(row => ({
-        top: row.c[1]?.v || '',
-        bottom: row.c[0]?.v || ''
+        bottom: row.c[0]?.v || '',
+        top: row.c[1]?.v || ''
       }));
       updatePage();
     }
@@ -93,16 +98,29 @@
         document.getElementById('bottomText').textContent = err.message;
       });
 
-    // 點擊上半部／下半部切換頁面
+    // 點觸上／下半部翻頁
     document.querySelector('.top').addEventListener('click', prevPage);
     document.querySelector('.bottom').addEventListener('click', nextPage);
 
-    // Apple Watch Digital Crown: 若部署為 PWA，可監聽滾動事件或旋轉事件（受限 watchOS）
-    // 模擬滾動翻頁
+    // 滾動滾輪／數位錶冠模擬上下頁
     window.addEventListener('wheel', e => {
       if (e.deltaY < 0) prevPage();
       else nextPage();
     });
+
+    // 嘗試自動進入全螢幕模式（用戶需手動允許）
+    function requestFullscreen() {
+      const elem = document.documentElement;
+      if (elem.requestFullscreen) {
+        elem.requestFullscreen();
+      } else if (elem.webkitRequestFullscreen) {
+        elem.webkitRequestFullscreen();
+      }
+    }
+
+    document.body.addEventListener("click", () => {
+      requestFullscreen();
+    }, { once: true });
   </script>
 </body>
 </html>
