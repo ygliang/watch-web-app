@@ -17,57 +17,62 @@
 
   <style>
     html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      background-color: black;
-      color: white;
-      font-family: sans-serif;
-      overflow: hidden;
-      touch-action: manipulation;
-      -webkit-user-select: none;
-      user-select: none;
-    }
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background-color: black;
+  color: white;
+  font-family: sans-serif;
+  overflow: hidden;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+}
 
-    #container {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      width: 100%;
-    }
+#container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
 
-    .half {
-      flex: 1;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      padding: 0 8px;
-    }
+.half {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 0 8px;
+}
 
-    #topText {
-      background-color: #1e3a8a;
-      transform: rotate(180deg);
-      color: #fff;
-      font-size: 6vh;
-    }
+/* 頂部文字 */
+#topText {
+  background-color: #1e3a8a;
+  transform: rotate(180deg);
+  color: #fff;
+  font-size: clamp(20px, 5vw, 50px);
+  line-height: 1.2;
+}
 
-    #bottomText {
-      background-color: #10b981;
-      color: #fff;
-      font-size: 7vh;
-    }
+/* 底部文字 */
+#bottomText {
+  background-color: #10b981;
+  color: #fff;
+  font-size: clamp(24px, 6vw, 60px);
+  line-height: 1.2;
+}
 
-    /* 超小螢幕（如 Apple Watch）進一步放大字 */
-    @media (max-width: 250px) {
-      #topText {
-        font-size: 8vh;
-      }
+/* Apple Watch / 超小裝置：再放大字體 */
+@media (max-width: 250px) {
+  #topText {
+    font-size: 40px;
+  }
 
-      #bottomText {
-        font-size: 9vh;
-      }
-    }
+  #bottomText {
+    font-size: 48px;
+  }
+}
+
   </style>
 </head>
 <body>
