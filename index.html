@@ -2,11 +2,11 @@
 <html lang="zh">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
-  <meta name="apple-mobile-web-app-title" content="雙向字幕" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="icon.png" />
   <title>雙向字幕</title>
 
@@ -44,12 +44,27 @@
     #topText {
       background-color: #1e3a8a;
       transform: rotate(180deg);
-      color: #fff;
+      color: white;
     }
 
     #bottomText {
       background-color: #10b981;
-      color: #fff;
+      color: white;
+    }
+
+    @media (max-width: 250px) {
+      #topText { font-size: 32px; }
+      #bottomText { font-size: 40px; }
+    }
+
+    @media (min-width: 251px) and (max-width: 450px) {
+      #topText { font-size: 36px; }
+      #bottomText { font-size: 48px; }
+    }
+
+    @media (min-width: 451px) {
+      #topText { font-size: 44px; }
+      #bottomText { font-size: 56px; }
     }
   </style>
 </head>
@@ -98,32 +113,16 @@
       showText();
     }
 
-    // 點上半部/下半部切換上下頁
+    // 點擊上下半部切換
     document.getElementById("topText").addEventListener("click", prevText);
     document.getElementById("bottomText").addEventListener("click", nextText);
 
-    // Apple Watch 數位旋鈕（或其他滾輪）控制
+    // 支援 Apple Watch 的數位旋鈕（或滑動）
     window.addEventListener("wheel", e => {
       if (e.deltaY > 0) nextText();
       else prevText();
     });
 
-    // 根據裝置高度自動放大字體
-    function adjustFontSize() {
-  const height = window.innerHeight;
-  const topSize = Math.floor(height * 0.35);
-  const bottomSize = Math.floor(height * 0.42);
-
-  document.getElementById("topText").style.fontSize = `${topSize}px`;
-  document.getElementById("bottomText").style.fontSize = `${bottomSize}px`;
-}
-
-window.addEventListener("resize", adjustFontSize);
-window.addEventListener("load", adjustFontSize);
-
-
-    // 初始執行
-    adjustFontSize();
     fetchData();
   </script>
 </body>
