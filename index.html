@@ -27,11 +27,11 @@
     .top {
       transform: rotate(180deg);
       color: #00f0ff;
-      font-size: 4vh;
+      font-size: 6vh;
     }
     .bottom {
       color: #ffcc00;
-      font-size: 4vh;
+      font-size: 6vh;
     }
     @media (min-width: 768px) {
       .top, .bottom {
@@ -63,8 +63,8 @@
       const json = JSON.parse(dataText.match(/(?<=google\.visualization\.Query\.setResponse\().*(?=\);)/s)[0]);
       const rows = json.table.rows;
       pages = rows.map(row => ({
-        top: row.c[0]?.v || '',
-        bottom: row.c[1]?.v || ''
+        top: row.c[1]?.v || '',
+        bottom: row.c[0]?.v || ''
       }));
       updatePage();
     }
