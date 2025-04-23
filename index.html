@@ -2,77 +2,55 @@
 <html lang="zh">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-
-  <!-- iOS 全螢幕設定 -->
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   <meta name="apple-mobile-web-app-title" content="雙向字幕" />
   <link rel="apple-touch-icon" href="icon.png" />
-
-  <!-- Android PWA 設定 -->
-  <link rel="manifest" href="manifest.json" />
-
   <title>雙向字幕</title>
 
   <style>
     html, body {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  background-color: black;
-  color: white;
-  font-family: sans-serif;
-  overflow: hidden;
-  touch-action: manipulation;
-  -webkit-user-select: none;
-  user-select: none;
-}
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background-color: black;
+      color: white;
+      font-family: sans-serif;
+      overflow: hidden;
+      -webkit-user-select: none;
+      user-select: none;
+      touch-action: manipulation;
+    }
 
-#container {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  width: 100%;
-}
+    #container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      width: 100%;
+    }
 
-.half {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  padding: 0 8px;
-}
+    .half {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 0 8px;
+      line-height: 1.2;
+    }
 
-/* 頂部文字 */
-#topText {
-  background-color: #1e3a8a;
-  transform: rotate(180deg);
-  color: #fff;
-  font-size: clamp(20px, 5vw, 50px);
-  line-height: 1.2;
-}
+    #topText {
+      background-color: #1e3a8a;
+      transform: rotate(180deg);
+      color: #fff;
+    }
 
-/* 底部文字 */
-#bottomText {
-  background-color: #10b981;
-  color: #fff;
-  font-size: clamp(24px, 6vw, 60px);
-  line-height: 1.2;
-}
-
-/* Apple Watch / 超小裝置：再放大字體 */
-@media (max-width: 250px) {
-  #topText {
-    font-size: 40px;
-  }
-
-  #bottomText {
-    font-size: 48px;
-  }
-}
-
+    #bottomText {
+      background-color: #10b981;
+      color: #fff;
+    }
   </style>
 </head>
 <body>
@@ -120,19 +98,30 @@
       showText();
     }
 
-    // 點擊上半部：上一筆；下半部：下一筆
+    // 點上半部/下半部切換上下頁
     document.getElementById("topText").addEventListener("click", prevText);
     document.getElementById("bottomText").addEventListener("click", nextText);
 
-    // Apple Watch 數位旋鈕（如支援）
+    // Apple Watch 數位旋鈕（或其他滾輪）控制
     window.addEventListener("wheel", e => {
-      if (e.deltaY > 0) {
-        nextText();
-      } else {
-        prevText();
-      }
+      if (e.deltaY > 0) nextText();
+      else prevText();
     });
 
+    // 根據裝置高度自動放大字體
+    function adjustFontSize() {
+      const height = window.innerHeight;
+      const topSize = Math.floor(height * 0.35); // 上半部佔畫面高度的 35%
+      const bottomSize = Math.floor(height * 0.42); // 下半部佔 42%
+
+      document.getElementById("topText").style.fontSize = `${topSize}px`;
+      document.getElementById("bottomText").style.fontSize = `${bottomSize}px`;
+    }
+
+    window.addEventListener("resize", adjustFontSize);
+
+    // 初始執行
+    adjustFontSize();
     fetchData();
   </script>
 </body>
