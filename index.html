@@ -6,7 +6,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="mobile-web-app-capable" content="yes" />
   <link rel="manifest" href="manifest.json" />
-  <title>Watch Text Viewer</title>
+  <title>散手</title>
   <style>
     html, body {
       margin: 0;
@@ -18,11 +18,9 @@
       display: flex;
       flex-direction: column;
       touch-action: manipulation;
+      overflow: hidden;
       -webkit-user-select: none;
       user-select: none;
-      -webkit-touch-callout: none;
-      -webkit-text-size-adjust: none;
-      overflow: hidden;
     }
 
     #container {
@@ -54,16 +52,17 @@
       color: #401C26;
     }
 
-    /* 適應手錶與小裝置：固定大字 */
+    /* 適應 Apple Watch 與小螢幕：固定大字 */
     @media (max-width: 300px), (max-height: 300px) {
       .half {
-        font-size: 7vw;
+        font-size: 9.5vw;
       }
     }
 
+    /* 一般手機以上字體 */
     @media (min-width: 301px) {
       .half {
-        font-size: 9vw;
+        font-size: 8vw;
       }
     }
   </style>
@@ -88,21 +87,26 @@
     const bottomEl = document.getElementById("bottomText");
 
     async function fetchData() {
-      const response = await fetch(API_URL);
-      const text = await response.text();
-      const json = JSON.parse(text.match(/google\.visualization\.Query\.setResponse\(([\s\S]+)\)/)[1]);
-      const rows = json.table.rows;
+      try {
+        const response = await fetch(API_URL);
+        const text = await response.text();
+        const json = JSON.parse(text.match(/google\.visualization\.Query\.setResponse\(([\s\S]+)\)/)[1]);
+        const rows = json.table.rows;
 
-      data = rows.map(row => ({
-        bottom: row.c[0]?.v || "",
-        top: row.c[1]?.v || ""
-      }));
+        data = rows.map(row => ({
+          bottom: row.c[0]?.v || "",
+          top: row.c[1]?.v || ""
+        }));
 
-      showText();
+        showText();
+      } catch (e) {
+        topEl.innerText = "⚠️ 無法載入資料";
+        bottomEl.innerText = "請確認網路";
+      }
     }
 
     function showText() {
-      const item = data[currentIndex];
+      const item = data[currentIndex] || { top: "", bottom: "" };
       if (swapped) {
         topEl.innerText = item.bottom;
         bottomEl.innerText = item.top;
@@ -130,7 +134,6 @@
       showText();
     }
 
-    // 點上下半部切換頁
     topEl.addEventListener("click", () => {
       if (!isLongPressing) prevText();
     });
@@ -138,7 +141,6 @@
       if (!isLongPressing) nextText();
     });
 
-    // 長按互換上下內容與配色
     const container = document.getElementById("container");
     let pressTimer = null;
 
@@ -151,17 +153,21 @@
       }, 600);
     });
 
-    container.addEventListener("pointerup", () => {
-      clearTimeout(pressTimer);
-    });
+    container.addEventListener("pointerup", () => clearTimeout(pressTimer));
 
-    // Digital Crown 模擬滑動（若裝置支援）
     window.addEventListener("wheel", e => {
       if (e.deltaY > 0) nextText();
       else prevText();
     });
 
     fetchData();
+
+    // ✅ 註冊離線支援
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("service-worker.js")
+        .then(() => console.log("✅ Service Worker 已註冊"))
+        .catch(e => console.log("❌ Service Worker 註冊失敗", e));
+    }
   </script>
 </body>
 </html>
