@@ -22,7 +22,7 @@
       -webkit-user-select: none;
       user-select: none;
       touch-action: manipulation;
-      -webkit-text-size-adjust: none; /* 全域停用文字自動縮放 */
+      -webkit-text-size-adjust: none;
     }
 
     #container {
@@ -45,22 +45,22 @@
       word-break: break-word;
       overflow: hidden;
       text-overflow: ellipsis;
-      -webkit-text-size-adjust: none; /* 停用縮放 */
+      -webkit-text-size-adjust: none;
       flex-shrink: 0;
       min-height: 0;
       min-width: 0;
     }
 
     #topText {
-      background-color: #1e3a8a;
+      background-color: #104c26;
       transform: rotate(180deg);
       transform-origin: center center;
-      color: white;
+      color: #f0e9dc;
     }
 
     #bottomText {
-      background-color: #10b981;
-      color: white;
+      background-color: #f0e9dc;
+      color: #104c26;
     }
 
     @media (max-width: 250px) {
@@ -89,6 +89,7 @@
 
     let data = [];
     let currentIndex = 0;
+    let swapped = false;
 
     async function fetchData() {
       const response = await fetch(API_URL);
@@ -104,11 +105,19 @@
       showText();
     }
 
-    function showText() {
-      if (data.length === 0) return;
+    function updateDisplay() {
       const item = data[currentIndex];
-      document.getElementById("topText").innerText = item.top;
-      document.getElementById("bottomText").innerText = item.bottom;
+      if (swapped) {
+        document.getElementById("topText").innerText = item.bottom;
+        document.getElementById("bottomText").innerText = item.top;
+      } else {
+        document.getElementById("topText").innerText = item.top;
+        document.getElementById("bottomText").innerText = item.bottom;
+      }
+    }
+
+    function showText() {
+      updateDisplay();
     }
 
     function nextText() {
@@ -121,13 +130,26 @@
       showText();
     }
 
+    // 單點上下半部切換頁面
     document.getElementById("topText").addEventListener("click", prevText);
     document.getElementById("bottomText").addEventListener("click", nextText);
 
-    window.addEventListener("wheel", e => {
-      if (e.deltaY > 0) nextText();
-      else prevText();
+    // 長按切換上下行
+    let touchTimer = null;
+    const container = document.getElementById("container");
+
+    container.addEventListener("touchstart", function () {
+      touchTimer = setTimeout(() => {
+        swapped = !swapped;
+        showText();
+      }, 600); // 600ms 為長按
     });
+
+    container.addEventListener("touchend", function () {
+      if (touchTimer) clearTimeout(touchTimer);
+    });
+
+   
 
     fetchData();
   </script>
