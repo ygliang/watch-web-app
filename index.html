@@ -1,85 +1,76 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   <meta name="mobile-web-app-capable" content="yes" />
   <link rel="manifest" href="manifest.json" />
-  <link rel="apple-touch-icon" href="icon.png" />
   <title>散手</title>
-
   <style>
     html, body {
       margin: 0;
       padding: 0;
       height: 100%;
-      background-color: black;
+      background: black;
       color: white;
-      font-family: sans-serif;
-      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      display: flex;
+      flex-direction: column;
+      touch-action: manipulation;
       -webkit-user-select: none;
       user-select: none;
-      touch-action: manipulation;
+      -webkit-touch-callout: none;
       -webkit-text-size-adjust: none;
+      overflow: hidden;
     }
 
     #container {
+      flex: 1;
       display: flex;
       flex-direction: column;
-      height: 100%;
-      width: 100%;
     }
 
     .half {
       flex: 1;
       display: flex;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
+      padding: 4px;
       text-align: center;
-      padding: 0 8px;
       line-height: 1.2;
-      font-size: 40px;
-      white-space: normal;
-      word-break: break-word;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      -webkit-text-size-adjust: none;
-      flex-shrink: 0;
-      min-height: 0;
-      min-width: 0;
+      font-weight: bold;
     }
 
     #topText {
-      background-color: #104c26;
+      background: #401C26;
+      color: #F0E9DC;
       transform: rotate(180deg);
-      transform-origin: center center;
-      color: #f0e9dc;
     }
 
     #bottomText {
-      background-color: #f0e9dc;
-      color: #104c26;
+      background: #F0E9DC;
+      color: #401C26;
     }
 
-    @media (max-width: 250px) {
-      .half { font-size: 32px; }
+    /* 適應手錶或小螢幕時放大字體 */
+    @media (max-width: 300px), (max-height: 300px) {
+      .half {
+        font-size: 5vw;
+      }
     }
 
-    @media (min-width: 251px) and (max-width: 450px) {
-      .half { font-size: 40px; }
-    }
-
-    @media (min-width: 451px) {
-      .half { font-size: 56px; }
+    @media (min-width: 301px) {
+      .half {
+        font-size: 8vw;
+      }
     }
   </style>
 </head>
 <body>
   <div id="container">
-    <div class="half" id="topText"></div>
-    <div class="half" id="bottomText"></div>
+    <div id="topText" class="half">載入中...</div>
+    <div id="bottomText" class="half">載入中...</div>
   </div>
 
   <script>
@@ -90,11 +81,12 @@
     let data = [];
     let currentIndex = 0;
     let swapped = false;
+    let isLongPressing = false;
 
     async function fetchData() {
       const response = await fetch(API_URL);
       const text = await response.text();
-      const json = JSON.parse(text.match(/google\.visualization\.Query\.setResponse\(([\s\S\w]+)\)/)[1]);
+      const json = JSON.parse(text.match(/google\.visualization\.Query\.setResponse\(([\s\S]+)\)/)[1]);
       const rows = json.table.rows;
 
       data = rows.map(row => ({
@@ -105,7 +97,7 @@
       showText();
     }
 
-    function updateDisplay() {
+    function showText() {
       const item = data[currentIndex];
       if (swapped) {
         document.getElementById("topText").innerText = item.bottom;
@@ -114,10 +106,6 @@
         document.getElementById("topText").innerText = item.top;
         document.getElementById("bottomText").innerText = item.bottom;
       }
-    }
-
-    function showText() {
-      updateDisplay();
     }
 
     function nextText() {
@@ -130,26 +118,36 @@
       showText();
     }
 
-    // 單點上下半部切換頁面
-    document.getElementById("topText").addEventListener("click", prevText);
-    document.getElementById("bottomText").addEventListener("click", nextText);
+    // 點擊上下半部換行
+    document.getElementById("topText").addEventListener("click", () => {
+      if (!isLongPressing) prevText();
+    });
+    document.getElementById("bottomText").addEventListener("click", () => {
+      if (!isLongPressing) nextText();
+    });
 
-    // 長按切換上下行
-    let touchTimer = null;
+    // 長按整個容器互換上下半部
     const container = document.getElementById("container");
+    let pressTimer = null;
 
-    container.addEventListener("touchstart", function () {
-      touchTimer = setTimeout(() => {
+    container.addEventListener("pointerdown", () => {
+      isLongPressing = false;
+      pressTimer = setTimeout(() => {
         swapped = !swapped;
+        isLongPressing = true;
         showText();
-      }, 600); // 600ms 為長按
+      }, 600);
     });
 
-    container.addEventListener("touchend", function () {
-      if (touchTimer) clearTimeout(touchTimer);
+    container.addEventListener("pointerup", () => {
+      clearTimeout(pressTimer);
     });
 
-   
+    // 滾輪上下滑動
+    window.addEventListener("wheel", e => {
+      if (e.deltaY > 0) nextText();
+      else prevText();
+    });
 
     fetchData();
   </script>
