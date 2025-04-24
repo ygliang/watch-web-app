@@ -52,17 +52,14 @@
       color: #401C26;
     }
 
-    /* 適應 Apple Watch 與小螢幕：字放更大 */
-    @media (max-width: 300px), (max-height: 300px) {
-      .half {
-        font-size: 11.5vw;
-      }
+    /* 使用舊版本較大字體設定 */
+    .half {
+      font-size: 10vw;
     }
 
-    /* 一般手機字體大小 */
-    @media (min-width: 301px) {
+    @media (min-width: 400px) {
       .half {
-        font-size: 8vw;
+        font-size: 7vw;
       }
     }
   </style>
@@ -141,7 +138,6 @@
       if (!isLongPressing) nextText();
     });
 
-    // ⏱ 長按觸發交換功能
     const container = document.getElementById("container");
     let pressTimer = null;
 
@@ -156,15 +152,8 @@
 
     container.addEventListener("pointerup", () => clearTimeout(pressTimer));
 
-    // ✅ 拿掉滑輪支援（Apple Watch 無作用）
-    // window.addEventListener("wheel", e => {
-    //   if (e.deltaY > 0) nextText();
-    //   else prevText();
-    // });
-
     fetchData();
 
-    // ✅ 註冊離線支援
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("service-worker.js")
         .then(() => console.log("✅ Service Worker 已註冊"))
