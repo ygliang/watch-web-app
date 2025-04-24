@@ -40,29 +40,30 @@
       text-align: center;
       line-height: 1.2;
       font-weight: bold;
+      transition: all 0.3s ease;
     }
 
     #topText {
-      background: #111;
-      color: #00ffff;
+      background: #401C26;
+      color: #F0E9DC;
       transform: rotate(180deg);
     }
 
     #bottomText {
-      background: #222;
-      color: #ffcc00;
+      background: #F0E9DC;
+      color: #401C26;
     }
 
-    /* 適應手錶或小螢幕時放大字體 */
+    /* 適應手錶與小裝置：固定大字 */
     @media (max-width: 300px), (max-height: 300px) {
       .half {
-        font-size: 5vw;
+        font-size: 7vw;
       }
     }
 
     @media (min-width: 301px) {
       .half {
-        font-size: 8vw;
+        font-size: 9vw;
       }
     }
   </style>
@@ -83,6 +84,9 @@
     let swapped = false;
     let isLongPressing = false;
 
+    const topEl = document.getElementById("topText");
+    const bottomEl = document.getElementById("bottomText");
+
     async function fetchData() {
       const response = await fetch(API_URL);
       const text = await response.text();
@@ -100,11 +104,19 @@
     function showText() {
       const item = data[currentIndex];
       if (swapped) {
-        document.getElementById("topText").innerText = item.bottom;
-        document.getElementById("bottomText").innerText = item.top;
+        topEl.innerText = item.bottom;
+        bottomEl.innerText = item.top;
+        topEl.style.background = "#F0E9DC";
+        topEl.style.color = "#401C26";
+        bottomEl.style.background = "#401C26";
+        bottomEl.style.color = "#F0E9DC";
       } else {
-        document.getElementById("topText").innerText = item.top;
-        document.getElementById("bottomText").innerText = item.bottom;
+        topEl.innerText = item.top;
+        bottomEl.innerText = item.bottom;
+        topEl.style.background = "#401C26";
+        topEl.style.color = "#F0E9DC";
+        bottomEl.style.background = "#F0E9DC";
+        bottomEl.style.color = "#401C26";
       }
     }
 
@@ -118,15 +130,15 @@
       showText();
     }
 
-    // 點擊上下半部換行
-    document.getElementById("topText").addEventListener("click", () => {
+    // 點上下半部切換頁
+    topEl.addEventListener("click", () => {
       if (!isLongPressing) prevText();
     });
-    document.getElementById("bottomText").addEventListener("click", () => {
+    bottomEl.addEventListener("click", () => {
       if (!isLongPressing) nextText();
     });
 
-    // 長按整個容器互換上下半部
+    // 長按互換上下內容與配色
     const container = document.getElementById("container");
     let pressTimer = null;
 
@@ -143,7 +155,7 @@
       clearTimeout(pressTimer);
     });
 
-    // 滾輪上下滑動
+    // Digital Crown 模擬滑動（若裝置支援）
     window.addEventListener("wheel", e => {
       if (e.deltaY > 0) nextText();
       else prevText();
